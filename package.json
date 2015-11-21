@@ -1,6 +1,6 @@
 {
   "name": "s9s-plugin-pagerduty",
-  "version": "1.0.12",
+  "version": "1.0.14",
   "description": "Severalnines pagerduty plugin for s9s-clustercontrol-service.",
   "main": "index.js",
   "scripts": {

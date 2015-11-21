@@ -18,34 +18,33 @@ function PagerDuty(options) {
      * @return {Pagerduty}
      */
     this.trigger = function(incident) {
+        /**
+         * Incident parameters
+         * @type {Object}
+         */
         var params = {
             "service_key": options.key,
-            "incident_key": incident.key,
+            "incident_key": incident.client + '/' + incident.id,
             "event_type": "trigger",
             "description": incident.description,
-            "client": incident.client || "Sample Monitoring Service",
-            "client_url": "https://" + options.domain + ".service.com",
-            // "details": {
-            //     "ping time": "1500ms",
-            //     "load avg": 0.75
-            // },
-            // "contexts": [{
-            //     "type": "link",
-            //     "href": "http://acme.pagerduty.com"
-            // }, {
-            //     "type": "link",
-            //     "href": "http://acme.pagerduty.com",
-            //     "text": "View the incident on PagerDuty"
-            // }, {
-            //     "type": "image",
-            //     "src": "https://chart.googleapis.com/chart?chs=600x400&chd=t:6,2,9,5,2,5,7,4,8,2,1&cht=lc&chds=a&chxt=y&chm=D,0033FF,0,0,5,1"
-            // }, {
-            //     "type": "image",
-            //     "src": "https://chart.googleapis.com/chart?chs=600x400&chd=t:6,2,9,5,2,5,7,4,8,2,1&cht=lc&chds=a&chxt=y&chm=D,0033FF,0,0,5,1",
-            //     "href": "https://google.com"
-            // }]
+            "client": incident.name || "ClusterControl",
+            "client_url": incident.url || "http://www.severalnines.com"
         };
+        if (incident.details) {
+            params.details = incident.details;
+        }
+        if (incident.contexts) {
+            params.contexts = incident.contexts;
+        }
+        /**
+         * Convers JSON to String
+         * @type {String}
+         */
         var postData = JSON.stringify(params);
+        /**
+         * Http request options
+         * @type {Object}
+         */
         var requestOptions = {
             hostname: 'events.pagerduty.com',
             port: 443,
@@ -56,37 +55,42 @@ function PagerDuty(options) {
                 'Content-Length': postData.length
             }
         };
-        if (incident.details) {
-            params.details = incident.details;
-        }
-        if (incident.contexts) {
-            params.contexts = incident.contexts;
-        }
-        var req = http.request(requestOptions, function(res) {
-            res.setEncoding('utf8');
+        /**
+         * Retquest object
+         * @type {Object}
+         */
+        var requestObject = http.request(requestOptions, function(response) {
+            response.setEncoding('utf8');
             var data = '';
-            res.on('data', function(chunk) {
+            response.on('data', function(chunk) {
                 data += chunk;
             });
-            res.on('end', function() {});
+            response.on('end', function() {});
         });
-        req.on('error', function(e) {
-            callback(false, {});
-        });
-        req.write(postData);
-        req.end();
+        requestObject.on('error', function() {});
+        requestObject.write(postData);
+        requestObject.end();
         return this;
     };
 }
-plugins.alarms.register('pagerduty', function(config, handler, method, data) {
+/**
+ * Start listening for adviser object
+ */
+plugins.advisers.register('pagerduty', function(config, data) {
     if (data instanceof Array) {
         data.forEach(function(item) {
-            (new PagerDuty(config)).trigger({
-                key: item.alarm_id,
-                client: 'ClusterControl Alarm: ' + item.alarm_name,
-                description: item.message,
-                details: item
-            })
+            try {
+                (new PagerDuty(config)).trigger({
+                    id: item.alarm_id,
+                    name: 'ClusterControl: ' + item.alarm_name,
+                    client: item.client,
+                    description: item.alarm_description,
+                    details: item.details,
+                    contexts: item.contexts
+                });
+            } catch (error) {
+                logger.warning('PageDuty: ' + error.message);
+            }
         })
     }
 });
