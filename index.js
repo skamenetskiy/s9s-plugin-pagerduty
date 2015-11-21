@@ -91,6 +91,6 @@ plugins.advisers.register('pagerduty', function(config, data) {
             } catch (error) {
                 logger.warning('PageDuty: ' + error.message);
             }
-        })
+        });
     }
 });
