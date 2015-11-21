@@ -1,4 +1,4 @@
-## @Severalnines/@PagerDuty integration plugin
+## Severalnines/PagerDuty integration plugin
 
 [severalnines.com](http://www.severalnines.com/) | [pagerduty.com](http://www.pagerduty.com/)
 

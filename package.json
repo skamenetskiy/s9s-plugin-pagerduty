@@ -1,11 +1,12 @@
 {
   "name": "s9s-plugin-pagerduty",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Severalnines pagerduty plugin for s9s-clustercontrol-service.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository":"git@github.com:skamenetskiy/s9s-plugin-pagerduty.git",
   "keywords": [
     "s9s",
     "clustercontrol",
